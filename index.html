@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sticky Notes To-Do</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .sticky-note {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: move;
+            touch-action: none;
+        }
+        
+        .sticky-note:hover {
+            transform: translateY(-2px) rotate(0deg) !important;
+            box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .sticky-note.dragging {
+            opacity: 0.7;
+            transform: scale(1.05);
+            z-index: 1000;
+            cursor: grabbing;
+        }
+        
+        .add-task-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .add-task-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .add-task-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .delete-btn {
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+        
+        .sticky-note:hover .delete-btn {
+            opacity: 1;
+        }
+        
+        .delete-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        textarea {
+            resize: none;
+            scrollbar-width: thin;
+        }
+        
+        textarea::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        textarea::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        textarea::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        
+        .note-colors {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+        
+        .note-color-1 {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+        
+        .note-color-2 {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+        
+        .note-color-3 {
+            background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+        }
+        
+        .note-color-4 {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        }
+        
+        .note-color-5 {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .board-container {
+            background-image: 
+                radial-gradient(circle, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+            background-size: 24px 24px;
+            background-position: 0 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h1 class="text-2xl font-bold text-gray-900">Sticky Notes</h1>
+                </div>
+                <button id="addTaskBtn" class="add-task-btn bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-6 py-2.5 rounded-lg font-medium shadow-md hover:shadow-lg flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <span>Add Note</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Board -->
+    <main class="board-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="notesBoard" class="relative min-h-[calc(100vh-150px)]">
+            <!-- Empty state -->
+            <div id="emptyState" class="flex flex-col items-center justify-center h-96 text-gray-400">
+                <svg class="w-24 h-24 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p class="text-xl font-medium">No notes yet</p>
+                <p class="text-sm mt-1">Click "Add Note" to create your first sticky note</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        class StickyNotesApp {
+            constructor() {
+                this.notes = this.loadNotes();
+                this.currentDragNote = null;
+                this.offsetX = 0;
+                this.offsetY = 0;
+                this.colors = ['note-color-1', 'note-color-2', 'note-color-3', 'note-color-4', 'note-color-5'];
+                
+                this.init();
+            }
+            
+            init() {
+                this.renderNotes();
+                this.attachEventListeners();
+            }
+            
+            attachEventListeners() {
+                document.getElementById('addTaskBtn').addEventListener('click', () => this.addNote());
+            }
+            
+            addNote() {
+                const note = {
+                    id: Date.now(),
+                    text: '',
+                    color: this.colors[Math.floor(Math.random() * this.colors.length)],
+                    position: this.getRandomPosition(),
+                    rotation: (Math.random() - 0.5) * 4 // Random rotation between -2 and 2 degrees
+                };
+                
+                this.notes.push(note);
+                this.saveNotes();
+                this.renderNotes();
+                
+                // Focus on the new note's textarea
+                setTimeout(() => {
+                    const newNoteElement = document.querySelector(`[data-id="${note.id}"] textarea`);
+                    if (newNoteElement) {
+                        newNoteElement.focus();
+                    }
+                }, 100);
+            }
+            
+            deleteNote(id) {
+                this.notes = this.notes.filter(note => note.id !== id);
+                this.saveNotes();
+                this.renderNotes();
+            }
+            
+            updateNoteText(id, text) {
+                const note = this.notes.find(n => n.id === id);
+                if (note) {
+                    note.text = text;
+                    this.saveNotes();
+                }
+            }
+            
+            updateNotePosition(id, x, y) {
+                const note = this.notes.find(n => n.id === id);
+                if (note) {
+                    note.position = { x, y };
+                    this.saveNotes();
+                }
+            }
+            
+            getRandomPosition() {
+                const board = document.getElementById('notesBoard');
+                const boardWidth = board.clientWidth;
+                const boardHeight = Math.max(board.clientHeight, 600);
+                
+                // Account for note size (280px width)
+                const maxX = Math.max(boardWidth - 300, 50);
+                const maxY = Math.max(boardHeight - 300, 50);
+                
+                return {
+                    x: Math.random() * maxX + 20,
+                    y: Math.random() * maxY + 20
+                };
+            }
+            
+            renderNotes() {
+                const board = document.getElementById('notesBoard');
+                const emptyState = document.getElementById('emptyState');
+                
+                // Clear existing notes except empty state
+                const existingNotes = board.querySelectorAll('.sticky-note');
+                existingNotes.forEach(note => note.remove());
+                
+                if (this.notes.length === 0) {
+                    emptyState.style.display = 'flex';
+                } else {
+                    emptyState.style.display = 'none';
+                    
+                    this.notes.forEach(note => {
+                        const noteElement = this.createNoteElement(note);
+                        board.appendChild(noteElement);
+                    });
+                }
+            }
+            
+            createNoteElement(note) {
+                const div = document.createElement('div');
+                div.className = `sticky-note ${note.color} rounded-lg shadow-lg p-5 absolute fade-in`;
+                div.style.left = `${note.position.x}px`;
+                div.style.top = `${note.position.y}px`;
+                div.style.transform = `rotate(${note.rotation}deg)`;
+                div.style.width = '280px';
+                div.style.minHeight = '200px';
+                div.setAttribute('data-id', note.id);
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 rounded-full bg-black/10"></div>
+                            <div class="w-2 h-2 rounded-full bg-black/10"></div>
+                            <div class="w-2 h-2 rounded-full bg-black/10"></div>
+                        </div>
+                        <button class="delete-btn text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-white/50">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <textarea 
+                        class="w-full bg-transparent border-none focus:outline-none text-gray-800 placeholder-gray-500 font-normal"
+                        placeholder="Type your note here..."
+                        rows="6"
+                        style="font-size: 15px; line-height: 1.6;"
+                    >${note.text}</textarea>
+                `;
+                
+                // Event listeners
+                const textarea = div.querySelector('textarea');
+                textarea.addEventListener('input', (e) => {
+                    this.updateNoteText(note.id, e.target.value);
+                });
+                
+                const deleteBtn = div.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.deleteNote(note.id);
+                });
+                
+                // Drag functionality
+                this.addDragListeners(div, note.id);
+                
+                return div;
+            }
+            
+            addDragListeners(element, noteId) {
+                let isDragging = false;
+                let currentX, currentY, initialX, initialY;
+                
+                const dragStart = (e) => {
+                    const target = e.target;
+                    // Don't drag if clicking on textarea or delete button
+                    if (target.tagName === 'TEXTAREA' || target.closest('.delete-btn')) {
+                        return;
+                    }
+                    
+                    isDragging = true;
+                    element.classList.add('dragging');
+                    
+                    if (e.type === 'touchstart') {
+                        initialX = e.touches[0].clientX - element.offsetLeft;
+                        initialY = e.touches[0].clientY - element.offsetTop;
+                    } else {
+                        initialX = e.clientX - element.offsetLeft;
+                        initialY = e.clientY - element.offsetTop;
+                    }
+                };
+                
+                const drag = (e) => {
+                    if (!isDragging) return;
+                    
+                    e.preventDefault();
+                    
+                    if (e.type === 'touchmove') {
+                        currentX = e.touches[0].clientX - initialX;
+                        currentY = e.touches[0].clientY - initialY;
+                    } else {
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                    }
+                    
+                    element.style.left = `${currentX}px`;
+                    element.style.top = `${currentY}px`;
+                };
+                
+                const dragEnd = () => {
+                    if (!isDragging) return;
+                    
+                    isDragging = false;
+                    element.classList.remove('dragging');
+                    
+                    const x = parseInt(element.style.left);
+                    const y = parseInt(element.style.top);
+                    this.updateNotePosition(noteId, x, y);
+                };
+                
+                // Mouse events
+                element.addEventListener('mousedown', dragStart);
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', dragEnd);
+                
+                // Touch events for mobile
+                element.addEventListener('touchstart', dragStart, { passive: false });
+                document.addEventListener('touchmove', drag, { passive: false });
+                document.addEventListener('touchend', dragEnd);
+            }
+            
+            loadNotes() {
+                const saved = localStorage.getItem('stickyNotes');
+                return saved ? JSON.parse(saved) : [];
+            }
+            
+            saveNotes() {
+                localStorage.setItem('stickyNotes', JSON.stringify(this.notes));
+            }
+        }
+        
+        // Initialize the app
+        const app = new StickyNotesApp();
+    </script>
+</body>
+</html>
